@@ -13,6 +13,8 @@ const PORT = Number(process.env.PORT) || 4000;
 // --- CORS: localhost dev + production domain ---
 const allowedOrigins = [
   'http://localhost:3000',
+  'https://petersyoo.com',
+  'https://www.petersyoo.com',
   ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim()) : []),
 ];
 app.use(

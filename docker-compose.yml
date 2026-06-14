@@ -8,6 +8,7 @@ services:
       MONGODB_URI: ${MONGODB_URI}
       API_KEY: ${API_KEY}
       PORT: "4000"
+      CORS_ORIGIN: ${CORS_ORIGIN:-}
     restart: unless-stopped
 
   web:
@@ -15,6 +16,7 @@ services:
       context: ./apps/web
       args:
         NEXT_PUBLIC_API_KEY: ${API_KEY}
+        API_PROXY_TARGET: http://api:4000
     ports:
       - "3000:3000"
     environment:

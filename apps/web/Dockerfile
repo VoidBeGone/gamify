@@ -7,6 +7,12 @@ COPY . .
 # NEXT_PUBLIC_* vars are embedded into the client bundle at build time
 ARG NEXT_PUBLIC_API_KEY
 ENV NEXT_PUBLIC_API_KEY=$NEXT_PUBLIC_API_KEY
+
+# API_PROXY_TARGET is read by next.config.ts at build time when it compiles
+# the rewrite rules into .next/routes-manifest.json — must be set here.
+ARG API_PROXY_TARGET=http://api:4000
+ENV API_PROXY_TARGET=$API_PROXY_TARGET
+
 RUN npm run build
 
 # ---- Runtime stage ----
