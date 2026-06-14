@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+/*
+ * LevelUp design system — dark-mode-only "personal cockpit / HUD".
+ * Colors and fonts are exposed as Tailwind v4 theme tokens, so utilities like
+ * `bg-background`, `text-fitness`, `border-content`, `font-display` all work.
+ */
+@theme {
+  --color-background: #0d0d0f;
+  --color-surface: #1a1a1f;
+  --color-surface-raised: #232329;
+
+  --color-accent: #3b82f6;
+  --color-fitness: #22c55e;
+  --color-content: #a855f7;
+  --color-sidequest: #f59e0b;
+
+  --color-debuff-warning: #eab308;
+  --color-debuff-critical: #ef4444;
+
+  --color-text-primary: #f4f4f5;
+  --color-text-secondary: #71717a;
+
+  --color-border: #27272a;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display-face), var(--font-inter), sans-serif;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle HUD glow used on XP / rank elements. */
+@utility glow-accent {
+  box-shadow: 0 0 16px -2px color-mix(in srgb, var(--color-accent) 60%, transparent);
+}
+
+/* Thin, unobtrusive scrollbars to match the cockpit aesthetic. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}

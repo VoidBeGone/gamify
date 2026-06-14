@@ -1,0 +1,30 @@
+name: Deploy to production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Trigger server deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send deploy webhook
+        env:
+          SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
+          URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+        run: |
+          PAYLOAD=$(printf '{"ref":"%s","sha":"%s"}' "$GITHUB_REF" "$GITHUB_SHA")
+
+          # Compute HMAC-SHA256 signature — must match what webhook.py verifies
+          SIG="sha256=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$SECRET" | awk '{print $2}')"
+
+          curl --fail --silent --show-error \
+            --max-time 10 \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-Deploy-Signature: $SIG" \
+            -d "$PAYLOAD" \
+            "$URL/deploy"

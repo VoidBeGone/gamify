@@ -1,0 +1,53 @@
+# systemd unit for the LevelUp deploy webhook
+#
+# SETUP (run as root on the server):
+#
+#   1. Copy this file:
+#        cp deploy/webhook.service /etc/systemd/system/levelup-webhook.service
+#
+#   2. Create the env file (keep it root-readable only):
+#        cat > /etc/levelup-webhook.env << 'EOF'
+#        WEBHOOK_SECRET=<the same secret you put in GitHub → Settings → Secrets → DEPLOY_WEBHOOK_SECRET>
+#        REPO_DIR=/home/<you>/gamify
+#        WEBHOOK_PORT=9000
+#        EOF
+#        chmod 600 /etc/levelup-webhook.env
+#
+#   3. Make the script executable:
+#        chmod +x /home/<you>/gamify/deploy/webhook.py
+#
+#   4. Enable and start:
+#        systemctl daemon-reload
+#        systemctl enable levelup-webhook
+#        systemctl start  levelup-webhook
+#
+#   5. Check it's running:
+#        systemctl status levelup-webhook
+#        journalctl -u levelup-webhook -f
+#
+#   6. Open the port in your firewall (UFW example):
+#        ufw allow 9000/tcp
+#
+# The webhook URL to put in GitHub Actions secret DEPLOY_WEBHOOK_URL is:
+#   http://<your-server-ip>:9000
+#
+# ─────────────────────────────────────────────────────────────────────────────
+
+[Unit]
+Description=LevelUp Deploy Webhook
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+# Change to the user that owns the repo and has docker access
+User=ubuntu
+EnvironmentFile=/etc/levelup-webhook.env
+ExecStart=/usr/bin/python3 /home/ubuntu/gamify/deploy/webhook.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

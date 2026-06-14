@@ -1,0 +1,40 @@
+{
+  "name": "@gamify/mcp",
+  "version": "1.0.0",
+  "description": "MCP server exposing the LevelUp backend to Claude as tools + a weekly-planning prompt.",
+  "license": "ISC",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "bin": {
+    "levelup-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "start:http": "node dist/index.js --http",
+    "dev": "ts-node src/index.ts",
+    "dev:http": "ts-node src/index.ts --http",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "mcp",
+    "claude",
+    "levelup"
+  ],
+  "author": "",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  }
+}
