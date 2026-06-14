@@ -15,6 +15,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'https://petersyoo.com',
   'https://www.petersyoo.com',
+  'http://10.0.0.243:3000',
   ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim()) : []),
 ];
 app.use(
