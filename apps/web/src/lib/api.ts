@@ -200,6 +200,14 @@ export async function completeTask(taskId: string): Promise<XpResult> {
   return data.xp_result;
 }
 
+export async function uncompleteTask(taskId: string): Promise<{ xp_reverted: number }> {
+  const data = await request<{ task: unknown; xp_reverted: number }>(
+    `/tasks/${taskId}/uncomplete`,
+    { method: "PATCH" },
+  );
+  return { xp_reverted: data.xp_reverted };
+}
+
 export interface WorkoutExerciseLog {
   name: string;
   sets: number;

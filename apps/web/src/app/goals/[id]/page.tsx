@@ -23,6 +23,7 @@ import { ErrorMessage } from "@/components/ui/error-message";
 import {
   fetchGoal,
   completeTask,
+  uncompleteTask,
   completeSubgoal,
   createSubgoal,
   createTask,
@@ -139,11 +140,13 @@ function TaskRow({
   task,
   pillarColor,
   onComplete,
+  onUncomplete,
   onDelete,
 }: {
   task: GoalTask;
   pillarColor: string;
   onComplete: (checkboxRect: DOMRect | null) => void;
+  onUncomplete: () => void;
   onDelete: () => void;
 }) {
   const checkboxRef = useRef<HTMLDivElement>(null);
@@ -164,6 +167,7 @@ function TaskRow({
         <Checkbox
           checked={task.is_completed}
           onCheck={handleCheck}
+          onUncheck={onUncomplete}
           color={pillarColor}
           label={`Complete ${task.title}`}
         />
@@ -285,6 +289,7 @@ function SubgoalItem({
   subgoal,
   pillarColor,
   onTaskComplete,
+  onTaskUncomplete,
   onTaskAdded,
   onTaskDelete,
   onDelete,
@@ -292,6 +297,7 @@ function SubgoalItem({
   subgoal: GoalSubgoal;
   pillarColor: string;
   onTaskComplete: (taskId: string, rect: DOMRect | null) => void;
+  onTaskUncomplete: (taskId: string) => void;
   onTaskAdded: (subgoalId: string, task: GoalTask) => void;
   onTaskDelete: (taskId: string) => void;
   onDelete: () => void;
@@ -376,6 +382,7 @@ function SubgoalItem({
               task={task}
               pillarColor={pillarColor}
               onComplete={(rect) => onTaskComplete(task._id, rect)}
+              onUncomplete={() => onTaskUncomplete(task._id)}
               onDelete={() => onTaskDelete(task._id)}
             />
           ))}
@@ -501,6 +508,7 @@ export default function GoalDetailPage() {
   const router = useRouter();
 
   const applyXpResult = useDashboardStore((s) => s.applyXpResult);
+  const revertXp = useDashboardStore((s) => s.revertXp);
   const enqueueCelebration = useDashboardStore((s) => s.enqueueCelebration);
   const storePillars = useDashboardStore((s) => s.pillars);
 
@@ -571,6 +579,39 @@ export default function GoalDetailPage() {
             ...sg,
             tasks: sg.tasks.map((t) =>
               t._id === taskId ? { ...t, is_completed: false } : t,
+            ),
+          })),
+        };
+      });
+    }
+  }
+
+  async function handleTaskUncomplete(taskId: string) {
+    if (!goal) return;
+    setGoal((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        subgoals: prev.subgoals.map((sg) => ({
+          ...sg,
+          tasks: sg.tasks.map((t) =>
+            t._id === taskId ? { ...t, is_completed: false, completed_at: undefined } : t,
+          ),
+        })),
+      };
+    });
+    try {
+      const { xp_reverted } = await uncompleteTask(taskId);
+      revertXp(xp_reverted, goal.pillar_id);
+    } catch {
+      setGoal((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          subgoals: prev.subgoals.map((sg) => ({
+            ...sg,
+            tasks: sg.tasks.map((t) =>
+              t._id === taskId ? { ...t, is_completed: true } : t,
             ),
           })),
         };
@@ -742,6 +783,7 @@ export default function GoalDetailPage() {
             subgoal={subgoal}
             pillarColor={pillarColor}
             onTaskComplete={handleTaskComplete}
+            onTaskUncomplete={handleTaskUncomplete}
             onTaskAdded={handleTaskAdded}
             onTaskDelete={handleTaskDelete}
             onDelete={() => setDeleteSubgoalId(subgoal._id)}

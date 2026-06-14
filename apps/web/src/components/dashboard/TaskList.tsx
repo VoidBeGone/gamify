@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useDashboardStore } from "@/store/useDashboardStore";
-import { completeTask, removeFromSchedule } from "@/lib/api";
+import { completeTask, uncompleteTask, removeFromSchedule } from "@/lib/api";
 import { toast } from "sonner";
 import type { Difficulty, Task } from "@/lib/types";
 
@@ -69,6 +69,8 @@ function TaskPopover({
 
 function TaskRow({ task }: { task: Task }) {
   const markTaskCompleted = useDashboardStore((s) => s.markTaskCompleted);
+  const markTaskUncompleted = useDashboardStore((s) => s.markTaskUncompleted);
+  const revertXp = useDashboardStore((s) => s.revertXp);
   const removeTaskFromToday = useDashboardStore((s) => s.removeTaskFromToday);
   const applyXpResult = useDashboardStore((s) => s.applyXpResult);
   const enqueueCelebration = useDashboardStore((s) => s.enqueueCelebration);
@@ -105,6 +107,20 @@ function TaskRow({ task }: { task: Task }) {
     }
   }
 
+  async function handleUncomplete() {
+    if (!task.is_completed || pending) return;
+    setPending(true);
+    markTaskUncompleted(task._id);
+    try {
+      const { xp_reverted } = await uncompleteTask(task._id);
+      revertXp(xp_reverted, task.pillar_id);
+    } catch {
+      markTaskCompleted(task._id);
+    } finally {
+      setPending(false);
+    }
+  }
+
   async function handleRemoveFromSchedule() {
     removeTaskFromToday(task._id);
     try {
@@ -122,6 +138,7 @@ function TaskRow({ task }: { task: Task }) {
         <Checkbox
           checked={task.is_completed}
           onCheck={handleComplete}
+          onUncheck={handleUncomplete}
           disabled={pending}
           color={task.pillar_color}
           label={`Complete ${task.title}`}

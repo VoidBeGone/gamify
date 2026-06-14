@@ -64,6 +64,8 @@ interface DashboardState {
   /** Remove a float by id once its animation completes. */
   removeXpFloat: (id: string) => void;
   markTaskCompleted: (taskId: string) => void;
+  markTaskUncompleted: (taskId: string) => void;
+  revertXp: (amount: number, pillarId?: string) => void;
   removeTaskFromToday: (taskId: string) => void;
   markChallengeCompleted: () => void;
   applyXpResult: (
@@ -167,6 +169,23 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     set((s) => ({
       todays_tasks: s.todays_tasks.map((t) =>
         t._id === taskId ? { ...t, is_completed: true } : t,
+      ),
+    })),
+
+  markTaskUncompleted: (taskId) =>
+    set((s) => ({
+      todays_tasks: s.todays_tasks.map((t) =>
+        t._id === taskId ? { ...t, is_completed: false } : t,
+      ),
+    })),
+
+  revertXp: (amount, pillarId) =>
+    set((s) => ({
+      user: s.user
+        ? { ...s.user, global_xp: Math.max(0, s.user.global_xp - amount) }
+        : s.user,
+      pillars: s.pillars.map((p) =>
+        p._id === pillarId ? { ...p, xp: Math.max(0, p.xp - amount) } : p,
       ),
     })),
 

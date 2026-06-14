@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { Types } from 'mongoose';
-import { DailySchedule, Goal, ISubgoal, ITask, MetricsLog, Pillar } from '../models';
+import { DailySchedule, Goal, ISubgoal, ITask, MetricsLog, Pillar, User, XpEvent } from '../models';
 import { getUser, PILLAR_NAMES } from '../utils/context';
 import { asyncHandler, ok, fail, HttpError } from '../utils/response';
 import { getXpConfig, xpForDifficulty } from '../utils/xp';
 import { calculate } from '../services/xpEngine';
+import { recalcPillarRank, recalcGlobalRank } from '../services/ranks';
 import { toDateString } from '../utils/dateHelpers';
 
 const router = Router();
@@ -113,6 +114,73 @@ router.patch(
     }
 
     return ok(res, { task, xp_result: result, pillar_name: pillar?.name });
+  })
+);
+
+// PATCH /tasks/:id/uncomplete — revert a completed task and deduct its XP
+router.patch(
+  '/:id/uncomplete',
+  asyncHandler(async (req, res) => {
+    const user = await getUser(req);
+    const goal = await Goal.findOne({
+      user_id: user._id,
+      'subgoals.tasks._id': req.params.id,
+    });
+    if (!goal) throw new HttpError(404, 'Task not found');
+
+    const found = findSubgoalWithTask(goal, req.params.id as string);
+    if (!found) throw new HttpError(404, 'Task not found');
+    const { task } = found;
+
+    if (!task.is_completed) return fail(res, 'Task is not completed', 409);
+
+    // Find the most recent XP event created when this task was completed
+    const xpEvent = await XpEvent.findOne({
+      user_id: user._id,
+      event_type: 'task_complete',
+      description: `Completed task: ${task.title}`,
+      pillar_id: goal.pillar_id,
+    }).sort({ created_at: -1 });
+
+    const xpReverted = xpEvent?.xp_awarded ?? 0;
+
+    // Revert the task
+    task.is_completed = false;
+    task.completed_at = undefined;
+    await goal.save();
+
+    if (xpReverted > 0 && xpEvent) {
+      const [pillar, userDoc] = await Promise.all([
+        Pillar.findById(goal.pillar_id),
+        User.findById(user._id),
+      ]);
+
+      if (pillar) {
+        pillar.xp = Math.max(0, pillar.xp - xpReverted);
+        await recalcPillarRank(pillar);
+
+        const isPostTask = task.title.includes('Post') && pillar.name === PILLAR_NAMES.content;
+        if (isPostTask) {
+          await MetricsLog.findOneAndDelete({
+            user_id: user._id,
+            metric_type: 'post_count',
+            notes: task.title,
+          }).sort({ logged_at: -1 });
+        }
+
+        await pillar.save();
+      }
+
+      if (userDoc) {
+        userDoc.global_xp = Math.max(0, userDoc.global_xp - xpReverted);
+        await recalcGlobalRank(userDoc);
+        await userDoc.save();
+      }
+
+      await xpEvent.deleteOne();
+    }
+
+    return ok(res, { task, xp_reverted: xpReverted });
   })
 );
 

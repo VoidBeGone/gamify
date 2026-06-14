@@ -79,7 +79,11 @@ router.get(
           deadlines.push({ type: 'subgoal', title: sg.title, deadline: sg.deadline, goal_title: goal.title });
         }
         for (const t of sg.tasks ?? []) {
-          if (t.scheduled_date && toDateString(t.scheduled_date) === todayString()) {
+          if (!t.scheduled_date) continue;
+          const taskDate = toDateString(t.scheduled_date);
+          const today = todayString();
+          // Show today's tasks (all) + past tasks that are still incomplete
+          if (taskDate === today || (taskDate < today && !t.is_completed)) {
             today_tasks.push({
               _id: t._id,
               title: t.title,
@@ -90,6 +94,7 @@ router.get(
               goal_title: goal.title,
               subgoal_id: sg._id,
               pillar_id: goal.pillar_id,
+              scheduled_date: taskDate,
             });
           }
         }

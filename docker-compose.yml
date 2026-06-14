@@ -9,6 +9,7 @@ services:
       API_KEY: ${API_KEY}
       PORT: "4000"
       CORS_ORIGIN: ${CORS_ORIGIN:-}
+      TZ: UTC
     restart: unless-stopped
 
   web:
