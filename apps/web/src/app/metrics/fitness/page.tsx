@@ -423,7 +423,7 @@ export default function FitnessMetricsPage() {
             metricType="body_weight_kg"
             step="0.1"
             latest={latestVal(latest, "body_weight_kg")}
-            onLogged={loadLatest}
+            onLogged={loadAll}
           />
           <StatRow
             label="Body Fat"
@@ -431,7 +431,7 @@ export default function FitnessMetricsPage() {
             metricType="body_fat_pct"
             step="0.1"
             latest={latestVal(latest, "body_fat_pct")}
-            onLogged={loadLatest}
+            onLogged={loadAll}
           />
           <StatRow
             label="Water Weight"
@@ -439,7 +439,7 @@ export default function FitnessMetricsPage() {
             metricType="body_water_pct"
             step="0.1"
             latest={latestVal(latest, "body_water_pct")}
-            onLogged={loadLatest}
+            onLogged={loadAll}
           />
         </CardContent>
       </Card>
