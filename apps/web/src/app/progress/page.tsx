@@ -14,6 +14,7 @@ import { CheckCircle, ChevronDown, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorMessage } from "@/components/ui/error-message";
+import { fmtCalLong } from "@/lib/dates";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -177,9 +178,7 @@ function GoalRow({ goal, color }: { goal: GoalProgress; color: string }) {
     goal.tasks_total > 0
       ? Math.round((goal.tasks_completed / goal.tasks_total) * 100)
       : 0;
-  const dl = goal.deadline
-    ? new Date(goal.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-    : null;
+  const dl = goal.deadline ? fmtCalLong(goal.deadline) : null;
 
   return (
     <div className="space-y-1 py-2">

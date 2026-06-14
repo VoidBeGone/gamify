@@ -35,6 +35,7 @@ import {
   type GoalTask,
 } from "@/lib/api";
 import { useDashboardStore } from "@/store/useDashboardStore";
+import { fmtCalShort, fmtCalLong } from "@/lib/dates";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -61,18 +62,11 @@ const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard", "epic"];
 // ---------------------------------------------------------------------------
 
 function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return fmtCalLong(iso);
 }
 
 function fmtShort(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
+  return fmtCalShort(iso);
 }
 
 function today() {

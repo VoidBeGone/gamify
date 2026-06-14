@@ -16,16 +16,14 @@ import {
   type PillarGroup,
   type GoalItem,
 } from "@/lib/api";
+import { fmtCalShort } from "@/lib/dates";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
+  return fmtCalShort(iso);
 }
 
 function taskProgress(goal: GoalItem) {

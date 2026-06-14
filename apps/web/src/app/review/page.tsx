@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { fetchWeeklyReview, type WeeklyReview } from "@/lib/api";
+import { fmtCalShort } from "@/lib/dates";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -49,17 +50,15 @@ function pillarColor(name: string): string {
 }
 
 function fmtWeek(start: string, end: string) {
-  const s = new Date(start);
-  const e = new Date(end);
   const opts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
-  return `${s.toLocaleDateString("en-US", opts)} – ${e.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
+  const s = fmtCalShort(start);
+  const [y] = end.slice(0, 10).split("-").map(Number);
+  const e = fmtCalShort(end);
+  return `${s} – ${e}, ${y}`;
 }
 
 function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
+  return fmtCalShort(iso);
 }
 
 // ---------------------------------------------------------------------------
